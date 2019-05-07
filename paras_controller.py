@@ -11,11 +11,10 @@ from ryu.lib.packet import arp
 from ryu.lib.packet import ipv4
 from ryu.lib.packet import tcp
 from ryu.lib.packet import udp
-
+import csv
 from operator import attrgetter
 from ryu.lib import hub
 # you may import more libs here, but the above libs should be enough
-
 class SimpleSwitch13(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
    
@@ -265,7 +264,7 @@ class SimpleSwitch13(app_manager.RyuApp):
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
         body = ev.msg.body
-
+        
         self.logger.info('datapath         port     '
                          'rx-pkts  rx-bytes rx-error '
                          'tx-pkts  tx-bytes tx-error')
@@ -278,16 +277,6 @@ class SimpleSwitch13(app_manager.RyuApp):
                              stat.rx_packets, stat.rx_bytes, stat.rx_errors,
                              stat.tx_packets, stat.tx_bytes, stat.tx_errors)
             
-            f = open("demofile.txt", "a+")
-            f.write('datapath         port     '
-                         'rx-pkts  rx-bytes rx-error '
-                         'tx-pkts  tx-bytes tx-error')
-            f.write('---------------- -------- '
-                         '-------- -------- -------- '
-                         '-------- -------- --------')
-            f.write('%016x %8x %8d %8d %8d %8d %8d %8d'
-                             %(ev.msg.datapath.id, stat.port_no,
-                             stat.rx_packets, stat.rx_bytes, stat.rx_errors,
-                             stat.tx_packets, stat.tx_bytes, stat.tx_errors))
-            f.close()
-            
+            with open('stats.csv', 'a') as csv_file:
+                writer = csv.writer(csv_file)
+                writer.writerow ([ev.msg.datapath.id, stat.port_no, stat.rx_bytes,stat.tx_bytes])
