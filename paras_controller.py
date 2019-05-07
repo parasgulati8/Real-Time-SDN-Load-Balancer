@@ -14,7 +14,9 @@ from ryu.lib.packet import udp
 import csv
 from operator import attrgetter
 from ryu.lib import hub
-# you may import more libs here, but the above libs should be enough
+
+load = {1 : [[0], [0], [0]], 2 : [[0], [0], [0]], 3 : [[0], [0], [0]], 4 : [[0], [0], [0]], 5 : [[0], [0], [0]]}
+util = {1 : {1:0,2:0,3:0}, 2: {1:0,2:0,3:0}, 3 : {1:0,2:0,3:0}, 4 : {1:0,2:0,3:0}, 5 : {1:0,2:0,3:0}}
 class SimpleSwitch13(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
    
@@ -31,22 +33,6 @@ class SimpleSwitch13(app_manager.RyuApp):
         self.arp_table["10.0.0.3"] = "00:00:00:00:00:03"
         self.datapaths = {}
         self.monitor_thread = hub.spawn(self._monitor)
-        
-        self.r_s1p1 = 0
-        self.r_s1p2 = 0
-        self.r_s1p3 = 0
-        self.r_s2p1 = 0
-        self.r_s2p2 = 0
-        self.r_s2p3 = 0
-        self.r_s3p1 = 0
-        self.r_s3p2 = 0
-        self.r_s3p3 = 0
-        self.r_s4p1 = 0
-        self.r_s4p2 = 0
-        self.r_s4p3 = 0
-        self.r_s5p1 = 0
-        self.r_s5p2 = 0
-        self.r_s5p3 = 0
     """
         Hand-shake event call back method
         This is the very initial method where the switch hand shake with the controller
@@ -75,38 +61,36 @@ class SimpleSwitch13(app_manager.RyuApp):
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.1', 10, 1)
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.2', 10, 2)
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.3', 10, 3)
-            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 1)
-            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_TCP, '10.0.0.1', 10, 1)
+            self.add_layer4_rules(datapath, inet.IPPROTO_TCP, '10.0.0.2', 10, 2)
             
         elif dpid == 2:
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.1', 10, 1)
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.2', 10, 2)
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.3', 10, 3)
-            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 1)
-            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_TCP, '10.0.0.1', 10, 1)
+            self.add_layer4_rules(datapath, inet.IPPROTO_TCP, '10.0.0.2', 10, 2)
             
         elif dpid == 3:
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.1', 10, 1)
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.2', 10, 2)
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.3', 10, 2)
-            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 1)
-            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_TCP, '10.0.0.1', 10, 1)
+            self.add_layer4_rules(datapath, inet.IPPROTO_TCP, '10.0.0.2', 10, 2)
 
         elif dpid == 4:
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.1', 10, 2)
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.2', 10, 1)
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.3', 10, 3)
-            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 1)
-            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_TCP, '10.0.0.1', 10, 1)
+            self.add_layer4_rules(datapath, inet.IPPROTO_TCP, '10.0.0.2', 10, 2)
             
         elif dpid == 5:
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.1', 10, 2)
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.2', 10, 2)
             self.add_layer4_rules(datapath, inet.IPPROTO_ICMP, '10.0.0.3', 10, 1)
-            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 2)
-            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 1)
-
-         
+            self.add_layer4_rules(datapath, inet.IPPROTO_TCP, '10.0.0.1', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_TCP, '10.0.0.2', 10, 1)
     """ 
         Call back method for PacketIn Message
         This is the call back method when a PacketIn Msg is sent
@@ -142,6 +126,10 @@ class SimpleSwitch13(app_manager.RyuApp):
         match = parser.OFPMatch(eth_type = ether.ETH_TYPE_IP,
                                 ip_proto = ip_proto,
                                 ipv4_dst = ipv4_dst)
+        try:
+            inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)] 
+        except:
+            pass
         self.add_flow(datapath, priority, match, actions)
 
     # Member methods you can call to install general rules
@@ -167,7 +155,6 @@ class SimpleSwitch13(app_manager.RyuApp):
     def handle_arp(self, datapath, in_port, pkt):
         ofproto = datapath.ofproto
         parser = datapath.ofproto_parser
-
         # parse out the ethernet and arp packet
         eth_pkt = pkt.get_protocol(ethernet.ethernet)
         arp_pkt = pkt.get_protocol(arp.arp)
@@ -210,7 +197,45 @@ class SimpleSwitch13(app_manager.RyuApp):
         eth_pkt = pkt.get_protocol(ethernet.ethernet)
         ipv4_pkt = pkt.get_protocol(ipv4.ipv4) # parse out the IPv4 pkt
         tcp_pkt = pkt.get_protocol(tcp.tcp)
-        
+        dpid = datapath.id
+        global util
+        if (dpid == 3):
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 1)
+            if (util[3][2] < 50):
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 2)
+            else:
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 3)
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 3)
+                
+        if (dpid == 4):
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 1)
+            if (util[4][2] < 50):
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 2)
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 2)
+            else:
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 3)
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 3)
+                
+        if (dpid == 5):
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 1)
+            if (util[3][2] < 50):
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 2)
+            else:
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 3)
+                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 3)
+                
+        if (dpid == 1):
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 3)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 1)
+                        
+        if (dpid == 2):
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 3)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 1)
+            
     @set_ev_cls(ofp_event.EventOFPStateChange,
                 [MAIN_DISPATCHER, DEAD_DISPATCHER])
     def _state_change_handler(self, ev):
@@ -264,7 +289,8 @@ class SimpleSwitch13(app_manager.RyuApp):
     @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
     def _port_stats_reply_handler(self, ev):
         body = ev.msg.body
-        
+        global load
+        global util
         self.logger.info('datapath         port     '
                          'rx-pkts  rx-bytes rx-error '
                          'tx-pkts  tx-bytes tx-error')
@@ -276,6 +302,62 @@ class SimpleSwitch13(app_manager.RyuApp):
                              ev.msg.datapath.id, stat.port_no,
                              stat.rx_packets, stat.rx_bytes, stat.rx_errors,
                              stat.tx_packets, stat.tx_bytes, stat.tx_errors)
+            
+            if (ev.msg.datapath.id == 1):
+                if(stat.port_no == 1):
+                    load[1][0].append(stat.rx_bytes + stat.tx_bytes)
+                    util[1][1] = (((load[1][0][-1] - load[1][0][-2])/10)*100)/3000000
+                if(stat.port_no == 2):
+                    load[1][1].append(stat.rx_bytes + stat.tx_bytes)
+                    util[1][2] = (((load[1][1][-1] - load[1][1][-2])/10)*100)/3000000
+                if(stat.port_no == 3):
+                    load[1][2].append(stat.rx_bytes + stat.tx_bytes)
+                    util[1][3] = (((load[1][2][-1] - load[1][2][-2])/10)*100)/3000000
+                    
+                    
+            if (ev.msg.datapath.id == 2):
+                if(stat.port_no == 1):
+                    load[2][0].append(stat.rx_bytes + stat.tx_bytes)
+                    util[2][1] = (((load[2][0][-1] - load[2][0][-2])/10)*100)/3000000
+                if(stat.port_no == 2):
+                    load[2][1].append(stat.rx_bytes + stat.tx_bytes)
+                    util[2][2] = (((load[2][1][-1] - load[2][1][-2])/10)*100)/3000000
+                if(stat.port_no == 3):
+                    load[3][2].append(stat.rx_bytes + stat.tx_bytes)
+                    util[3][3] = (((load[3][2][-1] - load[3][2][-2])/10)*100)/3000000
+                    
+            if (ev.msg.datapath.id == 3):
+                if(stat.port_no == 1):
+                    load[3][0].append(stat.rx_bytes + stat.tx_bytes)
+                    util[3][1] = (((load[3][0][-1] - load[3][0][-2])/10)*100)/3000000
+                if(stat.port_no == 2):
+                    load[3][1].append(stat.rx_bytes + stat.tx_bytes)
+                    util[3][2] = (((load[3][1][-1] - load[3][1][-2])/10)*100)/3000000
+                if(stat.port_no == 3):
+                    load[3][2].append(stat.rx_bytes + stat.tx_bytes)
+                    util[3][3] = (((load[3][2][-1] - load[3][2][-2])/10)*100)/3000000
+                    
+            if (ev.msg.datapath.id == 4):
+                if(stat.port_no == 1):
+                    load[4][0].append(stat.rx_bytes + stat.tx_bytes)
+                    util[4][1] = (((load[4][0][-1] - load[4][0][-2])/10)*100)/3000000
+                if(stat.port_no == 2):
+                    load[4][1].append(stat.rx_bytes + stat.tx_bytes)
+                    util[4][2] = (((load[4][1][-1] - load[4][1][-2])/10)*100)/3000000
+                if(stat.port_no == 3):
+                    load[4][2].append(stat.rx_bytes + stat.tx_bytes)
+                    util[4][3] = (((load[4][2][-1] - load[4][2][-2])/10)*100)/3000000
+                    
+            if (ev.msg.datapath.id == 5):
+                if(stat.port_no == 1):
+                    load[5][0].append(stat.rx_bytes + stat.tx_bytes)
+                    util[5][1] = (((load[5][0][-1] - load[5][0][-2])/10)*100)/3000000
+                if(stat.port_no == 2):
+                    load[5][1].append(stat.rx_bytes + stat.tx_bytes)
+                    util[5][2] = (((load[5][1][-1] - load[5][1][-2])/10)*100)/3000000
+                if(stat.port_no == 3):
+                    load[5][2].append(stat.rx_bytes + stat.tx_bytes)
+                    util[5][3] = (((load[5][2][-1] - load[5][2][-2])/10)*100)/3000000
             
             with open('stats.csv', 'a') as csv_file:
                 writer = csv.writer(csv_file)
