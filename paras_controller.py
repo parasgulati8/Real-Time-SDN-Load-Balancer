@@ -15,10 +15,6 @@ import csv
 from operator import attrgetter
 from ryu.lib import hub
 
-t_util = {1 : {1:0,2:0,3:0}, 2: {1:0,2:0,3:0}, 3 : {1:0,2:0,3:0}, 4 : {1:0,2:0,3:0}, 5 : {1:0,2:0,3:0}}
-r_util = {1 : {1:0,2:0,3:0}, 2: {1:0,2:0,3:0}, 3 : {1:0,2:0,3:0}, 4 : {1:0,2:0,3:0}, 5 : {1:0,2:0,3:0}}
-rx = {1 : {1:[0],2:[0],3:[0]}, 2: {1:[0],2:[0],3:[0]}, 3 : {1:[0],2:[0],3:[0]}, 4 : {1:[0],2:[0],3:[0]}, 5 : {1:[0],2:[0],3:[0]}}
-tx = {1 : {1:[0],2:[0],3:[0]}, 2: {1:[0],2:[0],3:[0]}, 3 : {1:[0],2:[0],3:[0]}, 4 : {1:[0],2:[0],3:[0]}, 5 : {1:[0],2:[0],3:[0]}}
 class SimpleSwitch13(app_manager.RyuApp):
     OFP_VERSIONS = [ofproto_v1_3.OFP_VERSION]
    
@@ -203,30 +199,24 @@ class SimpleSwitch13(app_manager.RyuApp):
         global util
         if (dpid == 3):
             self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 1)
-            if (t_util[3][2] < 60):
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 2)
-            else:
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 3)
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 3)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 3)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 3)
                 
         if (dpid == 4):
             self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 1)
-            if (t_util[4][2] < 60):
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 2)
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 2)
-            else:
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 3)
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 3)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 3)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 3)
                 
         if (dpid == 5):
             self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 1)
-            if (t_util[3][2] < 60):
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 2)
-            else:
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 3)
-                self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 3)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 2)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.2', 10, 3)
+            self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.1', 10, 3)
                 
         if (dpid == 1):
             self.add_layer4_rules(datapath, inet.IPPROTO_UDP, '10.0.0.3', 10, 3)
@@ -304,92 +294,6 @@ class SimpleSwitch13(app_manager.RyuApp):
                              ev.msg.datapath.id, stat.port_no,
                              stat.rx_packets, stat.rx_bytes, stat.rx_errors,
                              stat.tx_packets, stat.tx_bytes, stat.tx_errors)
-            
-            if (ev.msg.datapath.id == 1):
-                if(stat.port_no == 1):
-                    rx[1][1].append(stat.rx_bytes)
-                    tx[1][1].append(stat.tx_bytes)
-                    r_util[1][1] = (((rx[1][1][-1] - rx[1][1][-2])/10)*100)/1000000
-                    t_util[1][1] = (((tx[1][1][-1] - tx[1][1][-2])/10)*100)/1000000
-                if(stat.port_no == 2):
-                    rx[1][2].append(stat.rx_bytes)
-                    tx[1][2].append(stat.tx_bytes)
-                    r_util[1][2] = (((rx[1][2][-1] - rx[1][2][-2])/10)*100)/2000000
-                    t_util[1][2] = (((tx[1][2][-1] - tx[1][2][-2])/10)*100)/2000000
-                if(stat.port_no == 3):
-                    rx[1][3].append(stat.rx_bytes)
-                    tx[1][3].append(stat.tx_bytes)
-                    r_util[1][3] = (((rx[1][3][-1] - rx[1][3][-2])/10)*100)/3000000
-                    t_util[1][3] = (((tx[1][3][-1] - tx[1][3][-2])/10)*100)/3000000
-                    
-                    
-            if (ev.msg.datapath.id == 2):
-                if(stat.port_no == 1):
-                    rx[2][1].append(stat.rx_bytes)
-                    tx[2][1].append(stat.tx_bytes)
-                    r_util[2][1] = (((rx[2][1][-1] - rx[2][1][-2])/10)*100)/1000000
-                    t_util[2][1] = (((tx[2][1][-1] - tx[2][1][-2])/10)*100)/1000000
-                if(stat.port_no == 2):
-                    rx[2][2].append(stat.rx_bytes)
-                    tx[2][2].append(stat.tx_bytes)
-                    r_util[2][2] = (((rx[2][2][-1] - rx[2][2][-2])/10)*100)/2000000
-                    t_util[2][2] = (((tx[2][2][-1] - tx[2][2][-2])/10)*100)/2000000
-                if(stat.port_no == 3):
-                    rx[2][3].append(stat.rx_bytes)
-                    tx[2][3].append(stat.tx_bytes)
-                    r_util[2][3] = (((rx[2][3][-1] - rx[2][3][-2])/10)*100)/3000000
-                    t_util[2][3] = (((tx[2][3][-1] - tx[2][3][-2])/10)*100)/3000000
-                    
-            if (ev.msg.datapath.id == 3):
-                if(stat.port_no == 1):
-                    rx[3][1].append(stat.rx_bytes)
-                    tx[3][1].append(stat.tx_bytes)
-                    r_util[3][1] = (((rx[3][1][-1] - rx[3][1][-2])/10)*100)/3000000
-                    t_util[3][1] = (((tx[3][1][-1] - tx[3][1][-2])/10)*100)/3000000
-                if(stat.port_no == 2):
-                    rx[3][2].append(stat.rx_bytes)
-                    tx[3][2].append(stat.tx_bytes)
-                    r_util[3][2] = (((rx[3][2][-1] - rx[3][2][-2])/10)*100)/2000000
-                    t_util[3][2] = (((tx[3][2][-1] - tx[3][2][-2])/10)*100)/2000000
-                if(stat.port_no == 3):
-                    rx[3][3].append(stat.rx_bytes)
-                    tx[3][3].append(stat.tx_bytes)
-                    r_util[3][3] = (((rx[3][3][-1] - rx[3][3][-2])/10)*100)/3000000
-                    t_util[3][3] = (((tx[3][3][-1] - tx[3][3][-2])/10)*100)/3000000
-                    
-            if (ev.msg.datapath.id == 4):
-                if(stat.port_no == 1):
-                    rx[4][1].append(stat.rx_bytes)
-                    tx[4][1].append(stat.tx_bytes)
-                    r_util[4][1] = (((rx[4][1][-1] - rx[4][1][-2])/10)*100)/3000000
-                    t_util[4][1] = (((tx[4][1][-1] - tx[4][1][-2])/10)*100)/3000000
-                if(stat.port_no == 2):
-                    rx[4][2].append(stat.rx_bytes)
-                    tx[4][2].append(stat.tx_bytes)
-                    r_util[4][2] = (((rx[4][2][-1] - rx[4][2][-2])/10)*100)/2000000
-                    t_util[4][2] = (((tx[4][2][-1] - tx[4][2][-2])/10)*100)/2000000
-                if(stat.port_no == 3):
-                    rx[4][3].append(stat.rx_bytes)
-                    tx[4][3].append(stat.tx_bytes)
-                    r_util[4][3] = (((rx[4][3][-1] - rx[4][3][-2])/10)*100)/3000000
-                    t_util[4][3] = (((tx[4][3][-1] - tx[4][3][-2])/10)*100)/3000000
-                    
-            if (ev.msg.datapath.id == 5):
-                if(stat.port_no == 1):
-                    rx[5][1].append(stat.rx_bytes)
-                    tx[5][1].append(stat.tx_bytes)
-                    r_util[5][1] = (((rx[5][1][-1] - rx[5][1][-2])/10)*100)/3000000
-                    t_util[5][1] = (((tx[5][1][-1] - tx[5][1][-2])/10)*100)/3000000
-                if(stat.port_no == 2):
-                    rx[5][2].append(stat.rx_bytes)
-                    tx[5][2].append(stat.tx_bytes)
-                    r_util[5][2] = (((rx[5][2][-1] - rx[5][2][-2])/10)*100)/2000000
-                    t_util[5][2] = (((tx[5][2][-1] - tx[5][2][-2])/10)*100)/2000000
-                if(stat.port_no == 3):
-                    rx[5][3].append(stat.rx_bytes)
-                    tx[5][3].append(stat.tx_bytes)
-                    r_util[5][3] = (((rx[5][3][-1] - rx[5][3][-2])/10)*100)/3000000
-                    t_util[5][3] = (((tx[5][3][-1] - tx[5][3][-2])/10)*100)/3000000
             
             with open('stats.csv', 'a') as csv_file:
                 writer = csv.writer(csv_file)
